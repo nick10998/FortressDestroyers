@@ -10,18 +10,12 @@ public class DatabaseTest {
     public static void main(String[] args) {
 
         //Tests to see if Java is able to connect to mysql
-        try (Connection connection =
-                 DatabaseConnection.connect()) {
+        try (Connection connection = DatabaseConnection.connect()) {
+            System.out.println("Connected successfully");
 
-            System.out.println("Connected successfully!");
-
-            try (Statement statement =
-                     connection.createStatement();
-                 ResultSet results =
-                     statement.executeQuery("SHOW TABLES")) {
-
+            try (Statement statement = connection.createStatement();
+                 ResultSet results = statement.executeQuery("SHOW TABLES")) {
                 System.out.println("Tables in database:");
-
                 while (results.next()) {
                     System.out.println(results.getString(1));
                 }
