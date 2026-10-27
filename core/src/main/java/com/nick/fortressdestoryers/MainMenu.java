@@ -1,6 +1,5 @@
 package com.nick.fortressdestoryers;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
@@ -14,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -21,31 +21,32 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import java.util.List;
 
 
 public class MainMenu implements Screen {
     private Texture background;
     private final Main game;
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private FillViewport viewport;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
     private FitViewport pixelViewport;
     private ShapeRenderer shapeRenderer;
-    private BitmapFont font;
+    public BitmapFont font;
     private Stage stage;
-    private Texture whiteTexture;
-    private Sound clickSound;
+    public Texture whiteTexture;
+    public Sound clickSound;
+    private StatsMenu statsMenu;
+    List<String[]> levelData;
+    private Table center;
 
 
 
 
-    public MainMenu(final Main game, OrthographicCamera camera, FillViewport viewport, SpriteBatch batch) {
+    public MainMenu(final Main game, OrthographicCamera camera, SpriteBatch batch) {
         this.game = game;
         this.camera= camera;
-        this.viewport = viewport;
         this.batch = batch;
     }
 
@@ -57,10 +58,9 @@ public class MainMenu implements Screen {
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
         font.getData().setScale(5f);
-
-
-
+        levelData = Database.getData();
         Gdx.input.setInputProcessor(stage);
+
         //this makes pixels so I dont have to use skin.json
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
@@ -78,7 +78,8 @@ public class MainMenu implements Screen {
         boxTitle.setBackground(new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(1, 0, 1, 0.7f)));
         boxTitle.add(gameTitle).width(500f).center().pad(25f);
 
-        Table center = new Table();
+        center = new Table();
+        center.setTouchable(Touchable.enabled);
         center.setFillParent(true);
         center.add(boxTitle).center().padBottom(150f);
         stage.addActor(center);
@@ -105,7 +106,12 @@ public class MainMenu implements Screen {
         //this makes space between both buttons
         buttonTable.add().width(200f);
 
-        //stats
+        //stats + stats menu
+        statsMenu = new StatsMenu(whiteTexture,font,levelData,center);
+        statsMenu.setVisible(false);
+        statsMenu.setPosition((1366f - statsMenu.getWidth()) / 2f,(768f - statsMenu.getHeight()) / 2f);
+
+
         TextButton.TextButtonStyle statsStyle = new TextButton.TextButtonStyle();
         statsStyle.font = font;
         statsStyle.fontColor = Color.BLACK;
@@ -117,10 +123,15 @@ public class MainMenu implements Screen {
         statisticsButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play(1.0f);
+                statsMenu.setVisible(true);
+                center.setTouchable(Touchable.disabled);
+                stage.setScrollFocus(statsMenu.getDataScroller());
             }
         });
         center.row();
         center.add(buttonTable);
+        stage.addActor(statsMenu);
+        Gdx.input.setInputProcessor(stage);
     }
 
 

@@ -1,9 +1,7 @@
 package com.nick.fortressdestoryers;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 
@@ -21,7 +19,12 @@ public class Main extends Game {
         camera = new OrthographicCamera();
         viewport = new FillViewport(worldWidth,worldHeight, camera);
         batch = new SpriteBatch();
-        this.setScreen(new MainMenu(this,camera, viewport,batch));
+        try {
+            new Database(DatabaseConnection.connect());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.setScreen(new MainMenu(this,camera,batch));
 
     }
 
