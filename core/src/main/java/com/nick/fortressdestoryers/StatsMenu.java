@@ -19,8 +19,8 @@ import java.util.List;
 public class StatsMenu extends Table {
     private final ScrollPane dataScroller;
 
-    public StatsMenu(Texture whiteTexture, BitmapFont font, List<String[]> getData, Table center) {
-        this.setBackground(new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(0.1f, 0.1f, 0.15f, 0.85f)));
+    public StatsMenu(Texture texture, BitmapFont font, List<String[]> getData, Table center, TextButton quitButton) {
+        this.setBackground(new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0.1f, 0.1f, 0.15f, 0.85f)));
         this.center();
         this.setSize(1200f, 550f);
         BitmapFont statsFont = new BitmapFont();
@@ -65,7 +65,7 @@ public class StatsMenu extends Table {
         TextButton.TextButtonStyle closeStyle = new TextButton.TextButtonStyle();
         closeStyle.font = font;
         closeStyle.fontColor = Color.BLACK;
-        closeStyle.up = new TextureRegionDrawable(new TextureRegion(whiteTexture))
+        closeStyle.up = new TextureRegionDrawable(new TextureRegion(texture))
             .tint(new Color(0.8f, 0.2f, 0.2f, 0.9f));
 
         TextButton closeButton = new TextButton("Exit", closeStyle);
@@ -73,15 +73,10 @@ public class StatsMenu extends Table {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 setVisible(false);
-                //this allows main menu buttons to be clicked again
-                if (center != null) {
-                    center.setTouchable(Touchable.enabled);
+                center.setTouchable(Touchable.enabled);
+                quitButton.setTouchable(Touchable.enabled);
+                getStage().setScrollFocus(null);
                 }
-                //this stops the scroller from being clickable
-                if (getStage() != null) {
-                    getStage().setScrollFocus(null);
-                }
-            }
         });
 
         //puts header table plus scrollable data table and exit button

@@ -35,7 +35,7 @@ public class MainMenu implements Screen {
     private ShapeRenderer shapeRenderer;
     public BitmapFont font;
     private Stage stage;
-    public Texture whiteTexture;
+    public Texture texture;
     public Sound clickSound;
     private StatsMenu statsMenu;
     List<String[]> levelData;
@@ -65,7 +65,7 @@ public class MainMenu implements Screen {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
-        whiteTexture = new Texture(pixmap);
+        texture = new Texture(pixmap);
         pixmap.dispose();
 
         //title
@@ -75,7 +75,7 @@ public class MainMenu implements Screen {
         gameTitle.setWrap(true);
         //title box
         Table boxTitle = new Table();
-        boxTitle.setBackground(new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(1, 0, 1, 0.7f)));
+        boxTitle.setBackground(new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(1, 0, 1, 0.7f)));
         boxTitle.add(gameTitle).width(500f).center().pad(25f);
 
         center = new Table();
@@ -91,8 +91,8 @@ public class MainMenu implements Screen {
         TextButton.TextButtonStyle startStyle = new TextButton.TextButtonStyle();
         startStyle.font = font;
         startStyle.fontColor = Color.BLACK;
-        startStyle.up = new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(0f, 0.8f, 0f, 1f));
-        startStyle.down = new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(0f, 0.4f, 0f, 1f));
+        startStyle.up = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0f, 0.8f, 0f, 1f));
+        startStyle.down = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0f, 0.4f, 0f, 1f));
         TextButton startButton = new TextButton("Start", startStyle);
         center.row();
         buttonTable.add(startButton).width(300f).height(100f);
@@ -100,14 +100,29 @@ public class MainMenu implements Screen {
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play(1.0f);
+                game.setScreen(new LevelsMenu(game,batch,camera,clickSound));
             }
         });
 
         //this makes space between both buttons
         buttonTable.add().width(200f);
 
+
+        // quit button to exit program
+        TextButton.TextButtonStyle quitStyle = new TextButton.TextButtonStyle();
+        quitStyle.font = font;
+        quitStyle.fontColor = Color.BLACK;
+        quitStyle.up = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0.8f, 0.2f, 0.2f, 1f));
+        quitStyle.down = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0.4f, 0.1f, 0.1f, 1f));
+        TextButton quitButton = new TextButton("Quit", quitStyle);
+        quitButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y){
+                clickSound.play(1f);
+                Gdx.app.exit();
+            }
+        });
         //stats + stats menu
-        statsMenu = new StatsMenu(whiteTexture,font,levelData,center);
+        statsMenu = new StatsMenu(texture,font,levelData,center,quitButton);
         statsMenu.setVisible(false);
         statsMenu.setPosition((1366f - statsMenu.getWidth()) / 2f,(768f - statsMenu.getHeight()) / 2f);
 
@@ -115,26 +130,30 @@ public class MainMenu implements Screen {
         TextButton.TextButtonStyle statsStyle = new TextButton.TextButtonStyle();
         statsStyle.font = font;
         statsStyle.fontColor = Color.BLACK;
-        statsStyle.up = new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(0.8f, 0f, 0.8f, 1f));
-        statsStyle.down = new TextureRegionDrawable(new TextureRegion(whiteTexture)).tint(new Color(0.4f, 0f, 0.4f, 1f));
+        statsStyle.up = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0.8f, 0f, 0.8f, 1f));
+        statsStyle.down = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0.4f, 0f, 0.4f, 1f));
         TextButton statisticsButton = new TextButton("Statistics", statsStyle);
         buttonTable.add(statisticsButton).width(300f).height(100f);
 
+        //Statistic button click recognition
         statisticsButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play(1.0f);
                 statsMenu.setVisible(true);
                 center.setTouchable(Touchable.disabled);
+                quitButton.setTouchable(Touchable.disabled);
                 stage.setScrollFocus(statsMenu.getDataScroller());
             }
         });
+        quitButton.setSize(250f,100f);
+        quitButton.setPosition(1130f, 600f);
+        stage.addActor(quitButton);
+
         center.row();
         center.add(buttonTable);
         stage.addActor(statsMenu);
         Gdx.input.setInputProcessor(stage);
     }
-
-
 
     @Override
     public void render(float v) {
@@ -182,7 +201,7 @@ public class MainMenu implements Screen {
         shapeRenderer.dispose();
         font.dispose();
         stage.dispose();
-        whiteTexture.dispose();
+        texture.dispose();
         clickSound.dispose();
 
     }
