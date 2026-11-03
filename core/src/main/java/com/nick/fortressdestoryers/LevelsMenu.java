@@ -2,6 +2,7 @@ package com.nick.fortressdestoryers;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -13,6 +14,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -78,7 +81,49 @@ public class LevelsMenu implements Screen {
         levelsTitle.setSize(400f, 100f);
         levelsTitle.setPosition(50f,650f);
 
+        //This tracks level completion
+        Preferences completion = Gdx.app.getPreferences("MyGameSave");
+        int highestUnlockedLevel = completion.getInteger("unlockedLevel", 1);
+
+        Table levelGrid = new Table();
+        levelGrid.setFillParent(true);
+        levelGrid.center();
+
+        //level buttons
+        TextButton.TextButtonStyle levelButtonStyle = new TextButton.TextButtonStyle();
+        levelButtonStyle.font = font;
+        levelButtonStyle.fontColor = Color.BLACK;
+        levelButtonStyle.up = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0f, 0.8f, 0f, 1f));
+        levelButtonStyle.down = new TextureRegionDrawable(new TextureRegion(texture)).tint(new Color(0f, 0.4f, 0f, 1f));
+
+        for (int i =1; i < 22; i++) {
+            boolean isUnlocked = (i <= highestUnlockedLevel);
+            TextButton levelButton = new TextButton(String.valueOf(i),levelButtonStyle);
+
+            //reads highest unlocked level
+            //if it is unlocked, make it green and clickable
+            if(isUnlocked) {
+                levelButton.setColor(Color.GREEN);
+                levelButton.setTouchable(Touchable.enabled);
+                levelButton.addListener(new ClickListener() {
+                    public void clicked(InputEvent event, float x, float y) {
+                        clickSound.play(1.0f);
+                    }
+                });
+            }
+            //if its locked, make it gray and unclickable
+            else {
+                levelButton.setColor(Color.GRAY);
+                levelButton.setTouchable(Touchable.disabled);
+            }
+            levelGrid.add(levelButton).size(100f,100f).pad(10f);
+            // start new row after 7 buttons
+            if (i%7==0) {
+                levelGrid.row();
+            }
+        }
         stage.addActor(levelsTitle);
+        stage.addActor(levelGrid);
 
     }
 
