@@ -41,7 +41,7 @@ public class MainMenu implements Screen {
     private StatsMenu statsMenu;
     List<String[]> levelData;
     private Table center;
-    private Music backgroundMusic;
+
 
 
 
@@ -57,10 +57,6 @@ public class MainMenu implements Screen {
         pixelViewport = new FitViewport(1366f,768f);
         stage = new Stage(pixelViewport,batch);
         background = new Texture(Gdx.files.internal("background castle main.jpg"));
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("skyrimmusic.mp3"));
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.7f);
-        backgroundMusic.play();
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
         font.getData().setScale(5f);
@@ -209,8 +205,5 @@ public class MainMenu implements Screen {
         stage.dispose();
         texture.dispose();
         clickSound.dispose();
-        backgroundMusic.stop();
-        backgroundMusic.dispose();
-
     }
 }

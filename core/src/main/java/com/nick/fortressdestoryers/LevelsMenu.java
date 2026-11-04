@@ -83,7 +83,7 @@ public class LevelsMenu implements Screen {
 
         //This tracks level completion
         Preferences completion = Gdx.app.getPreferences("MyGameSave");
-        int highestUnlockedLevel = completion.getInteger("unlockedLevel", 1);
+        int highestUnlockedLevel = completion.getInteger("unlockedLevel", 4);
 
         Table levelGrid = new Table();
         levelGrid.setFillParent(true);
@@ -99,6 +99,7 @@ public class LevelsMenu implements Screen {
         for (int i =1; i < 22; i++) {
             boolean isUnlocked = (i <= highestUnlockedLevel);
             TextButton levelButton = new TextButton(String.valueOf(i),levelButtonStyle);
+            final int levelNumber = i;
 
             //reads highest unlocked level
             //if it is unlocked, make it green and clickable
@@ -108,6 +109,7 @@ public class LevelsMenu implements Screen {
                 levelButton.addListener(new ClickListener() {
                     public void clicked(InputEvent event, float x, float y) {
                         clickSound.play(1.0f);
+                        game.setScreen(new GameScreen(game,levelNumber,clickSound));
                     }
                 });
             }
