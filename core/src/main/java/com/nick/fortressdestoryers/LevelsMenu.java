@@ -83,7 +83,7 @@ public class LevelsMenu implements Screen {
 
         //This tracks level completion
         Preferences completion = Gdx.app.getPreferences("MyGameSave");
-        int highestUnlockedLevel = completion.getInteger("unlockedLevel", 4);
+        int highestUnlockedLevel = completion.getInteger("unlockedLevel", 1);
 
         Table levelGrid = new Table();
         levelGrid.setFillParent(true);

@@ -1,15 +1,15 @@
 package com.nick.fortressdestoryers;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
@@ -44,8 +45,10 @@ public class GameScreen extends ScreenAdapter {
     private float floorHeight;
     private Texture floorTexture;
     private float currentWorldWidth;
-
     private Texture backgroundTexture;
+    private Catapult catapult;
+    ShapeRenderer shapeRenderer;
+    private final Array<Boulder> activeBoulders = new Array<>();
 
 
     public GameScreen(Main game, int levelNumber, Sound clickSound){
@@ -67,9 +70,46 @@ public class GameScreen extends ScreenAdapter {
         floorRegion = new TextureRegion(floorTexture);
         floorHeight = 2f;
         createFloor();
-
         uiStage = new Stage(new FitViewport(1366, 768));
-        Gdx.input.setInputProcessor(uiStage);
+
+        //necessary for the catapult
+        shapeRenderer = new ShapeRenderer();
+        catapult = new Catapult(world,6f,4f);
+
+        // multiplexer allows both my back button and drag+hold controls to be processed even with uiStage
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(uiStage);
+        multiplexer.addProcessor(new InputAdapter() {
+            private final Vector2 worldTouch = new Vector2();
+            private void updateTouchingCoordinates(float screenX,float screenY){
+                viewport.unproject(worldTouch.set(screenX,screenY));
+            }
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                updateTouchingCoordinates(screenX, screenY);
+                catapult.onTouchPress(worldTouch);
+                return true;
+            }
+
+            @Override
+            public boolean touchDragged(int screenX, int screenY, int pointer) {
+                updateTouchingCoordinates(screenX, screenY);
+                catapult.onTouchDragging(worldTouch);
+                return true;
+            }
+
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                updateTouchingCoordinates(screenX, screenY);
+                Boulder newBoulder = catapult.onTouchRelease(worldTouch);
+                if (newBoulder != null) {
+                    activeBoulders.add(newBoulder);
+                }
+                return true;
+            }
+        });
+
+        Gdx.input.setInputProcessor(multiplexer);
 
         font = new BitmapFont();
         font.getData().setScale(2f);
@@ -108,6 +148,7 @@ public class GameScreen extends ScreenAdapter {
         Table topTable = new Table();
         topTable.setFillParent(true);
         topTable.top();
+        topTable.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.childrenOnly);
         topTable.add(leftInfoTable).left().pad(50f).expandX();
         topTable.add(returnButton).right().pad(20f).width(180f).height(45f);
 
@@ -124,7 +165,13 @@ public class GameScreen extends ScreenAdapter {
         //collision for the floor
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(200f,1f);
-        floorBody.createFixture(shape,0.0f);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 0.0f;
+        fixtureDef.filter.categoryBits = Collisions.ENVIRONMENT;
+        fixtureDef.filter.maskBits = (short)(Collisions.CATAPULT | Collisions.BOULDER);
+        floorBody.createFixture(fixtureDef);
         shape.dispose();
     }
 
@@ -150,7 +197,14 @@ public class GameScreen extends ScreenAdapter {
         float floorX = camera.position.x-(currentWorldWidth/2f);
         float floorY = floorBody.getPosition().y-(floorHeight/2f);
         game.batch.draw(floorRegion, floorX,floorY,currentWorldWidth,floorHeight);
+        catapult.render(game.batch);
+        //boulders
+        for (Boulder boulder : activeBoulders) {
+            boulder.render(game.batch);
+        }
         game.batch.end();
+        //shows aim line
+        catapult.trajectoryLine(shapeRenderer, camera);
         //shows collision hitboxes
         debugRenderer.render(world, camera.combined);
         uiStage.act(v);
@@ -170,5 +224,10 @@ public class GameScreen extends ScreenAdapter {
         world.dispose();
         debugRenderer.dispose();
         uiStage.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (catapult != null) catapult.dispose();
+        for (Boulder boulder : activeBoulders) {
+            boulder.dispose();
+        }
     }
 }
