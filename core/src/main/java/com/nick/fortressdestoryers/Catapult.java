@@ -20,7 +20,7 @@ public class Catapult implements Disposable {
     private final Vector2 dragPosition = new Vector2();
     private boolean isTouched = false;
     private static final float maxDrag = 4.0f;
-    private static final float forceMultiplier = 15.0f;
+    private static final float forceMultiplier = 40.0f;
     private final Sound tensionSound;
     private final Sound launchSound;
     private final Texture catapultTexture;

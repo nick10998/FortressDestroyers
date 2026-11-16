@@ -33,8 +33,10 @@ public class Boulder implements Disposable {
         fixtureDef.friction = 2.0f;
         //how much it bounces
         fixtureDef.restitution = 0.3f;
-        fixtureDef.filter.categoryBits = Collisions.BOULDER;
-        fixtureDef.filter.maskBits = Collisions.ENVIRONMENT;
+        fixtureDef.filter.categoryBits =Collisions.BOULDER;
+        fixtureDef.filter.maskBits = (short) (Collisions.ENVIRONMENT| Collisions.BOULDER | Collisions.ENEMY);
+        Fixture fixture = body.createFixture(fixtureDef);
+        fixture.setUserData(this);
 
         body.createFixture(fixtureDef);
         shape.dispose();
