@@ -5,4 +5,5 @@ public class Collisions {
     public static final short BOULDER = 0x0002;
     public static final short ENVIRONMENT = 0x0004;
     public static final short ENEMY = 0x0008;
+    public static final short FLOOR = 0x0010;
 }

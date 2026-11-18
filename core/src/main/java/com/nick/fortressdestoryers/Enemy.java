@@ -32,7 +32,7 @@ public class Enemy implements Disposable {
         fixtureDef. density = 2.0f;
         fixtureDef.friction = 0.5f;
         fixtureDef.filter.categoryBits = Collisions.ENEMY;
-        fixtureDef.filter.maskBits = (short)(Collisions.ENVIRONMENT | Collisions.BOULDER | Collisions.ENEMY);
+        fixtureDef.filter.maskBits = (short)(Collisions.ENVIRONMENT | Collisions.BOULDER | Collisions.ENEMY | Collisions.FLOOR);
         Fixture fixture = body.createFixture(fixtureDef);
         fixture.setUserData(this);
         shape.dispose();

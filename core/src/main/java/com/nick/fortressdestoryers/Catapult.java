@@ -2,6 +2,7 @@ package com.nick.fortressdestoryers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -26,8 +27,9 @@ public class Catapult implements Disposable {
     private final Texture catapultTexture;
     private long tensionSoundID = -1;
 
-    public enum Powerups {NONE, LIGHTNING}
-    private Powerups currentPowerup = Powerups.NONE;
+    public enum Powerups {NONE, LIGHTNING, FIRE}
+    private Powerups storedPoweup = Powerups.NONE;
+    private boolean powerupArmed = false;
 
     public Catapult(World world, float startPosX, float startPosY){
         this.world = world;
@@ -53,7 +55,7 @@ public class Catapult implements Disposable {
         fixtureDef.shape = shape;
         fixtureDef.density = 0.0f;
         fixtureDef.filter.categoryBits = Collisions.CATAPULT;
-        fixtureDef.filter.maskBits = Collisions.ENVIRONMENT;
+        fixtureDef.filter.maskBits = (short)(Collisions.ENVIRONMENT | Collisions.FLOOR);
         body.createFixture(fixtureDef);
         shape.dispose();
     }
@@ -106,6 +108,16 @@ public class Catapult implements Disposable {
     private Boulder lauchBoulder(){
         Vector2 force = new Vector2(boulderRestPosition).sub(dragPosition).scl(forceMultiplier);
         Boulder boulder = new Boulder(world, boulderRestPosition.x, boulderRestPosition.y, 0.7f);
+        if (isPowerupArmed()) {
+            if (storedPoweup == Powerups.LIGHTNING){
+                boulder.setLightning(true);
+                boulder.setTrailColor(new Color(0.2f, 0.8f, 1.0f, 1f));
+            }
+            else if (storedPoweup == Powerups.FIRE){
+                boulder.setTrailColor(new Color(1.0f, 0.3f, 0.1f, 1f));
+            }
+            consumePowerUp();
+        }
         boulder.launch(force);
         return boulder;
     }
@@ -125,20 +137,32 @@ public class Catapult implements Disposable {
         Gdx.gl.glLineWidth(1f);
     }
 
-    public void setPowerUp(Powerups powerup) {
-        this.currentPowerup = powerup;
+    public void collectPowerup(Powerups powerup) {
+        this.storedPoweup = powerup;
+        this.powerupArmed = false;
     }
 
-    public Powerups getCurrentPowerUp() {
-        return currentPowerup;
+    public void armPowerup(Powerups powerup){
+        if (storedPoweup != Powerups.NONE) {
+            this.powerupArmed = true;
+        }
+    }
+
+    public Powerups getStoredPowerup() {
+        return storedPoweup;
     }
 
     public boolean hasPowerUp() {
-        return currentPowerup != Powerups.NONE;
+        return storedPoweup != Powerups.NONE;
+    }
+
+    public boolean isPowerupArmed() {
+        return powerupArmed;
     }
 
     public void consumePowerUp() {
-        this.currentPowerup = Powerups.NONE;
+        this.storedPoweup = Powerups.NONE;
+        this.powerupArmed = false;
     }
 
     public Vector2 getLaunchAnchor() {

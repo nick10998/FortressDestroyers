@@ -1,6 +1,7 @@
 package com.nick.fortressdestoryers;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -15,11 +16,15 @@ public class Structure implements Disposable {
     private final float height;
     private int health = 2;
     private boolean markedForDestruction = false;
+    private final Sound damageSound;
+    private final Sound destroyedSound;
 
     public Structure(World world, float startPosX, float startPosY, float width, float height) {
         this.width = width;
         this.height = height;
         this.texture = new Texture(Gdx.files.internal("woodTexture.jpeg"));
+        this.damageSound = Gdx.audio.newSound(Gdx.files.internal("wooddamagelight.mp3"));
+        this.destroyedSound = Gdx.audio.newSound(Gdx.files.internal("woodbreakdestroyed.mp3"));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -34,7 +39,7 @@ public class Structure implements Disposable {
         fixtureDef.friction = 0.8f;
         fixtureDef.restitution = 0.0f;
         fixtureDef.filter.categoryBits = Collisions.ENVIRONMENT;
-        fixtureDef.filter.maskBits = (short)(Collisions.ENVIRONMENT | Collisions.ENEMY | Collisions.BOULDER);
+        fixtureDef.filter.maskBits = (short)(Collisions.ENVIRONMENT | Collisions.ENEMY | Collisions.BOULDER | Collisions.FLOOR);
 
         Fixture fixture = body.createFixture(fixtureDef);
         fixture.setUserData(this);
@@ -56,6 +61,16 @@ public class Structure implements Disposable {
         health--;
         if (health <= 0) {
             markedForDestruction = true;
+            destroyedSound.play(1f);
+        }
+        else damageSound.play(1f);
+    }
+
+    public void markForDestruction() {
+        if (!markedForDestruction) {
+            this.health = 0;
+            this.markedForDestruction = true;
+            destroyedSound.play();
         }
     }
 
